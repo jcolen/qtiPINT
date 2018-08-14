@@ -25,11 +25,11 @@ import time
 import matplotlib
 import tempfile
 
-import pulsar as pu
-import constants
+import qtipint.pulsar as pu
+import qtipint.constants as constants
 
-from opensomething import OpenSomethingWidget
-from plk import PlkWidget
+from qtipint.opensomething import OpenSomethingWidget
+from qtipint.plk import PlkWidget
 
 from astropy import log
 log.setLevel('WARNING')
@@ -73,7 +73,7 @@ class QtipWindow(QtGui.QMainWindow):
     """
     
     def __init__(self, parent=None, parfile=None, 
-                 timfile=None, perfile=None, **kwargs):
+                 timfile=None, **kwargs):
         super(QtipWindow, self).__init__(parent)
         self.setWindowTitle('QtIpython interface to PINT/libstempo')
 
@@ -203,7 +203,7 @@ class QtipWindow(QtGui.QMainWindow):
         self.kernel.shell.enable_matplotlib(gui='inline')
 
         # Load the necessary packages in the embedded kernel
-        cell = "import numpy as np, matplotlib.pyplot as plt, pulsar as pu, libfitorbit as lo"
+        cell = "import numpy as np, matplotlib.pyplot as plt, qtipint.pulsar as pu, libfitorbit as lo"
         self.kernel.shell.run_cell(cell, store_history=False)
 
         # Set the in-kernel matplotlib color scheme to black.
@@ -500,11 +500,10 @@ def main():
     usage = "usage: %prog [options]"
     parser = optparse.OptionParser(usage=usage)
 
-    parser.add_option('-f', '--file', action='store', type='string', nargs=2, \
-            default=(None, None), help="Provide a parfile and a timfile")
-
-    parser.add_option('-p', '--periodfile', action='store', type='string', nargs=1, \
-            default=(None, None), help="Provide a period file (per)")
+    parser.add_option('-p', '--parfile', action='store', type='string', nargs=1, \
+            default=None, help="provide a parfile")
+    parser.add_option('-t', '--timfile', action='store', type='string', nargs=1, \
+            default=None, help="provide a timfile")
 
     (options, args) = parser.parse_args()
 
@@ -512,8 +511,7 @@ def main():
     app = QtGui.QApplication(sys.argv)
 
     # Create the window, and start the application
-    qtipwin = QtipWindow(parfile=options.file[0], timfile=options.file[1],\
-                         perfile=options.periodfile[0])
+    qtipwin = QtipWindow(parfile=options.parfile, timfile=options.timfile)
     qtipwin.raise_()        # Required on OSX to move the app to the foreground
     sys.exit(app.exec_())
 
