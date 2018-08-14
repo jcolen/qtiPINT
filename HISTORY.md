@@ -1,9 +1,11 @@
 .. :changelog:
 
-0.1.0 (2018-8-13)
+0.1.1 (2018-8-14)
 ++++++++++++++++++
 
-- Removed support for LibTEMPO and refactored
+- Project migration from vhaasteren/qtip to jcolen/qtiPINT
+- Significantly expanded PINT support
+- Removed support for LibsTEMPO and refactored
 
 0.1.0 (2014-10-13)
 ++++++++++++++++++
