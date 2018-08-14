@@ -1,6 +1,6 @@
 build
 dist
-qtip.egg-info
+qtiPINT.egg-info
 *~
 .*.swp
 *.pyc
