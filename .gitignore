@@ -1,0 +1,10 @@
+build
+dist
+qtip.egg-info
+*~
+.*.swp
+*.pyc
+*.txt
+.DS_Store
+solvingpulsars
+testdata
