@@ -279,7 +279,6 @@ class QtipWindow(QtGui.QMainWindow):
         """
         self.hbox.addWidget(self.openSomethingWidget)
         self.hbox.addWidget(self.plkWidget)
-        self.hbox.addStretch(1)
         self.hbox.addWidget(self.consoleWidget)
         self.mainFrame.setLayout(self.hbox)
 

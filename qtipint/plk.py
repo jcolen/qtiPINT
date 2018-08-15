@@ -433,6 +433,11 @@ class PlkXYPlotWidget(QtGui.QWidget):
                 self.ySelected = ii
             self.yButtonGroup.addButton(radio)
             self.yButtonGroup.setId(radio, ii)
+       
+        label = QtGui.QLabel(self)
+        label.setText("")
+        self.grid.addWidget(label, len(self.xychoices)+1, 0, 1, self.grid.columnCount())
+        self.grid.setRowStretch(self.grid.rowCount()-1, 1)
 
         self.setLayout(self.grid)
 
@@ -501,7 +506,7 @@ class PlkWidget(QtGui.QWidget):
         # 5x4 inches, 100 dots-per-inch
         #
         self.plkDpi = 100
-        self.plkFig = Figure((5.0, 4.0), dpi=self.plkDpi)
+        self.plkFig = Figure(dpi=self.plkDpi)
         self.plkCanvas = FigureCanvas(self.plkFig)
         self.plkCanvas.setParent(self)
 
@@ -633,8 +638,9 @@ class PlkWidget(QtGui.QWidget):
 
         self.xyplotbox.addWidget(self.xyChoiceWidget)
         self.xyplotbox.addWidget(self.plkCanvas)
-
+        self.xyplotbox.setStretch(1, 1)
         self.plkbox.addLayout(self.xyplotbox)
+        self.plkbox.setStretch(1, 1)
 
         self.plkbox.addWidget(self.actionsWidget)
         self.setLayout(self.plkbox)
@@ -1020,4 +1026,3 @@ class PlkWidget(QtGui.QWidget):
         """
         # Callback to the plkWidget
         self.keyPressEvent(event)
-
