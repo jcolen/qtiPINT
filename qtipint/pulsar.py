@@ -132,6 +132,15 @@ class Pulsar(object):
                 if not getattr(self._model, p).quantity is None] 
 
     @property
+    def compsSetParamsDict(self):
+        '''Returns a dict of names of components and parameters that are set in the parfile'''
+        ret = {}
+        for comp in self._model.components:
+            ret[comp] = [p for p in self._model.components[comp].params \
+                         if not getattr(self._model, p).quantity is None]
+        return ret
+
+    @property
     def vals(self): 
         '''Returns a tuple of parameter values in the model'''
         return np.array([getattr(self._model, p).value for p in self.params])

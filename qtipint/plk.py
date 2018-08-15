@@ -253,92 +253,98 @@ class PlkFitboxesWidget(QtGui.QWidget):
         self.boxChecked = None
 
         # The checkboxes are ordered on a grid
-        self.hbox = QtGui.QHBoxLayout()     # One horizontal layout
-        self.vboxes = []                    # Several vertical layouts (9 per line)
-        self.fitboxPerLine = 8
+        self.grid = QtGui.QGridLayout()
+        self.grid.setSpacing(10)
+        self.maxcols = 8
 
         self.setPlkFitboxesLayout()
-
 
     def setPlkFitboxesLayout(self):
         """
         Set the layout of this widget
         """
         # Initialise the layout of the fit-box Widget
-        # Initially there are no fitboxes, so just add the hbox
-        self.setLayout(self.hbox)
+        # Initially there are no fitboxes, so just add the grid
+        self.setLayout(self.grid)
 
 
-    def setCallbacks(self, boxChecked, setpars, fitpars, nofitbox):
+    def setCallbacks(self, boxChecked, comps, fitpars, nofitbox):
         """
         Set the callback functions
 
         @param boxChecked:      Callback function, when box is checked
-        @param setpars:         psr.parameters(which='set')
+        @param comps:           psr.compSetParamsDict
         @param fitpars:         psr.parameters(which='fit')
         @param nofitbox:        Which parameters not to have a box for
         """
         self.boxChecked = boxChecked
         self.deleteFitCheckBoxes()
-        self.addFitCheckBoxes(setpars, fitpars, nofitbox)
+        self.addFitCheckBoxes(comps, fitpars, nofitbox)
 
-    def addFitCheckBoxes(self, setpars, fitpars, nofitbox):
+    def addFitCheckBoxes(self, comps, fitpars, nofitbox):
         """
         Add the fitting checkboxes at the top of the plk Window
 
-        @param setpars:     The parameters that are 'set' (in the model)
+        @param comps:       A dict of model components and their 'set' parameters
         @param fitpars:     The parameters that are currently being fitted for
         @param nofitbox:    The parameters we should skip
         """
-        # Delete the fitboxes if there were still some left
-        if not len(self.vboxes) == 0:
-            self.deleteFitCheckBoxes()
+        self.deleteFitCheckBoxes()
 
-        # First add all the vbox layouts
-        for ii in range(min(self.fitboxPerLine, len(setpars))):
-            self.vboxes.append(QtGui.QVBoxLayout())
-            self.hbox.addLayout(self.vboxes[-1])
+        rowCount = 0
+        for ii, comp in enumerate(comps):
+            showpars = [p for p in comps[comp] if not p in nofitbox]
+            #Don't put anything if there are no parameters to show
+            if len(showpars) == 0:
+                continue
 
-        # Then add the checkbox widgets to the vboxes
-        index = 0
-        for pp, par in enumerate(setpars):
-            if not par in nofitbox:
-                vboxind = index % self.fitboxPerLine
-
+            #Add component label
+            font = QtGui.QFont()
+            font.setBold(True)
+            label = QtGui.QLabel(self)
+            label.setText(comp)
+            label.setFont(font)
+            self.grid.addWidget(label, rowCount, 0, 1, 1)
+            
+            for pp, par in enumerate(showpars):
                 cb = QtGui.QCheckBox(par, self)
                 cb.stateChanged.connect(self.changedFitCheckBox)
-
-                # Set checked/unchecked
+                #Set checked/unchecked
                 cb.setChecked(par in fitpars)
 
-                self.vboxes[vboxind].addWidget(cb)
-                index += 1
+                self.grid.addWidget(cb, rowCount+int(pp/self.maxcols), 1+pp%self.maxcols, 1, 1)
+           
+            numExRows = int((len(showpars)-1)/self.maxcols)
 
-        for vv, vbox in enumerate(self.vboxes):
-            vbox.addStretch(1)
+            if numExRows > 0:
+                label = QtGui.QLabel(self)
+                label.setText('')
+                self.grid.addWidget(label, rowCount+1, 0, numExRows, 1)
 
+            rowCount += numExRows + 1
+        
+            #Now pad the last row
+            lastcol = (len(showpars)%self.maxcols)+1
+
+            print(numExRows, lastcol, comp, comps[comp])
+
+            if lastcol < self.maxcols:
+                label = QtGui.QLabel(self)
+                label.setText('')
+                self.grid.addWidget(label, rowCount-1, lastcol+1, 1, self.maxcols-lastcol)
 
     def deleteFitCheckBoxes(self):
         """
         Delete all the checkboxes from the Widget. Used when a new pulsar is loaded
         """
-        for fcbox in self.vboxes:
-            while fcbox.count():
-                item = fcbox.takeAt(0)
+        for xx in range(self.grid.rowCount()):
+            for yy in range(self.grid.columnCount()):
+                item = self.grid.itemAtPosition(xx, yy)
                 if isinstance(item, QtGui.QWidgetItem):
                     item.widget().deleteLater()
-                elif isinstance(item, QtGui.QSpacerItem):
-                    fcbox.removeItem(item)
                 else:
-                    fcbox.clearLayout(item.layout())
-                    fcbox.removeItem(item)
-
-
-        for fcbox in self.vboxes:
-            self.hbox.removeItem(fcbox)
-
-        self.vboxes = []
-
+                    self.grid.removeItem(item)
+    
     def changedFitCheckBox(self):
         """
         This is the signal handler when a checkbox is changed. The changed checkbox
@@ -352,16 +358,14 @@ class PlkFitboxesWidget(QtGui.QWidget):
 
         # Whatevs, we can just as well re-scan all the CheckButtons, and re-do
         # the fit
-        for fcbox in self.vboxes:
-            items = (fcbox.itemAt(i) for i in range(fcbox.count())) 
-            for w in items:
-                if isinstance(w, QtGui.QWidgetItem) and \
-                        isinstance(w.widget(), QtGui.QCheckBox) and \
-                        parchanged == w.widget().text():
-                    self.boxChecked(parchanged, bool(w.widget().checkState()))
-                    print("{0} set to {1}".format(parchanged, bool(w.widget().checkState())))
-
-
+        for xx in range(self.grid.rowCount()):
+            for yy in range(self.grid.columnCount()):
+                item = self.grid.itemAtPosition(xx, yy)
+                if isinstance(item, QtGui.QWidgetItem) and \
+                        isinstance(item.widget(), QtGui.QCheckBox) and \
+                        parchanged == item.widget().text():
+                    self.boxChecked(parchanged, bool(item.widget().checkState()))
+                    print("{0} set to {1}".format(parchanged, bool(item.widget().checkState())))
 
 class PlkXYPlotWidget(QtGui.QWidget):
     """
@@ -594,7 +598,7 @@ class PlkWidget(QtGui.QWidget):
         self.psr = psr
 
         # Update the fitting checkboxes
-        self.fitboxesWidget.setCallbacks(self.fitboxChecked, psr.setparams,
+        self.fitboxesWidget.setCallbacks(self.fitboxChecked, psr.compsSetParamsDict,
                 psr.fitparams, pu.nofitboxpars)
         self.xyChoiceWidget.setCallbacks(self.updatePlot)
         self.actionsWidget.setCallbacks(self.updatePlot, self.reFit)
