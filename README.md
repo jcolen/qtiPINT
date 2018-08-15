@@ -10,7 +10,7 @@ This is a graphical interface for the [PINT](https://github.com/NANOGrav/PINT/) 
 
 It works with an embedded IPython kernel. That's where all the calculations are performed.
 
-At the moment, not all the extended functions of Plk are implemented.
+At the moment, not all the extended functions of Plk are implemented. If there is anything you especially want implemented, open an issue.
 
 This project was previously under development at [vhaasteren/qtip](https://github.com/vhaasteren/qtip/) and was intended to interface with Tempo2, libstempo and Piccard too. Here, only PINT is supported.
 
