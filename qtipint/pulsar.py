@@ -303,18 +303,30 @@ class Pulsar(object):
         return None
     
     def write_fit_summary(self):
-        print('Post-Fit Chi2:\t%f' % self.chisq)
-        print('Parameter\tPre-Fit\t\tPost-Fit')
-        print('----------------------------------------')
+        wrms = np.sqrt(self.chisq / self._toas.ntoas)
+        print('Post-Fit Chi2:\t\t%.8g us^2' % self.chisq)
+        print('Post-Fit Weighted RMS:\t%.8g us' % wrms)
+        print('%17s\t%16s\t%16s\t%16s\t%16s' % 
+              ('Parameter', 'Pre-Fit', 'Post-Fit', 'Uncertainty', 'Difference'))
+        print('-' * 112)
         for key in self.fitparams:
-            print('%8s\t%8f\t%8f' % (key, 
-                                     getattr(self._model, key).value,
-                                     getattr(self._fitter.model, key).value))
+            post = getattr(self._fitter.model, key).quantity
+            units = post.unit
+            pre = getattr(self._model, key).quantity.to(units)
+            unc = getattr(self._fitter.model, key).uncertainty.to(units)
+            diff = (post - pre).to(units)
+            print('%8s %8s\t%16.10g\t%16.10g\t%16.8g\t%16.8g' % (key, units,
+                                                             post.value, 
+                                                             pre.value,
+                                                             unc.value,
+                                                             diff.value))
 
     def fit(self, iters=1):
         #Re-initialize fitter (start fit from scratch)
         self._fitter = pint.fitter.WlsFitter(self._toas, self._model)
-        print('Pre-Fit Chi2:\t%f' % self.chisq)
+        wrms = np.sqrt(self.chisq / self._toas.ntoas)
+        print('Pre-Fit Chi2:\t\t%.8g us^2' % self.chisq)
+        print('Pre-Fit Weighted RMS:\t%.8g us' % wrms)
         self._fitter.fit_toas(maxiter=1)
         self.write_fit_summary()
     
