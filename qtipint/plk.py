@@ -290,9 +290,11 @@ class PlkFitboxesWidget(QtGui.QWidget):
         @param nofitbox:    The parameters we should skip
         """
         self.deleteFitCheckBoxes()
+        
+        self.compGrids = []
 
-        rowCount = 0
-        for ii, comp in enumerate(comps):
+        ii = 0
+        for comp in comps:
             showpars = [p for p in comps[comp] if not p in nofitbox]
             #Don't put anything if there are no parameters to show
             if len(showpars) == 0:
@@ -301,37 +303,32 @@ class PlkFitboxesWidget(QtGui.QWidget):
             #Add component label
             font = QtGui.QFont()
             font.setBold(True)
-            label = QtGui.QLabel(self)
-            label.setText(comp)
-            label.setFont(font)
-            self.grid.addWidget(label, rowCount, 0, 1, 1)
+            ccb = QtGui.QCheckBox(comp, self)
+            ccb.stateChanged.connect(self.changedGroupCheckBox)
+            ccb.setFont(font)
+            ccb.setChecked(False)
+            self.grid.addWidget(ccb, ii, 0, 1, 1)
             
+            self.compGrids.append(QtGui.QGridLayout())
+
             for pp, par in enumerate(showpars):
                 cb = QtGui.QCheckBox(par, self)
                 cb.stateChanged.connect(self.changedFitCheckBox)
                 #Set checked/unchecked
                 cb.setChecked(par in fitpars)
-
-                self.grid.addWidget(cb, rowCount+int(pp/self.maxcols), 1+pp%self.maxcols, 1, 1)
-           
-            numExRows = int((len(showpars)-1)/self.maxcols)
-
-            if numExRows > 0:
-                label = QtGui.QLabel(self)
-                label.setText('')
-                self.grid.addWidget(label, rowCount+1, 0, numExRows, 1)
-
-            rowCount += numExRows + 1
-        
+                
+                self.compGrids[ii].addWidget(cb, int(pp/self.maxcols), pp%self.maxcols, 1, 1)
+                cb.setVisible(False)
             #Now pad the last row
-            lastcol = (len(showpars)%self.maxcols)+1
-
-            print(numExRows, lastcol, comp, comps[comp])
+            lastcol = len(showpars)%self.maxcols
+            lastrow = int(len(showpars)/self.maxcols)
 
             if lastcol < self.maxcols:
                 label = QtGui.QLabel(self)
                 label.setText('')
-                self.grid.addWidget(label, rowCount-1, lastcol+1, 1, self.maxcols-lastcol)
+                self.compGrids[ii].addWidget(label, lastrow, lastcol, 1, self.maxcols-lastcol)
+                label.setVisible(False)
+            ii += 1
 
     def deleteFitCheckBoxes(self):
         """
@@ -345,6 +342,28 @@ class PlkFitboxesWidget(QtGui.QWidget):
                 else:
                     self.grid.removeItem(item)
     
+    def changedGroupCheckBox(self):
+        '''
+        Show or hide a group of fit check boxes corresponding to a component
+        '''
+        sender = self.sender()
+        parchanged = sender.text()
+
+        for ii in range(self.grid.rowCount()):
+            item = self.grid.itemAtPosition(ii, 0)
+            if isinstance(item, QtGui.QWidgetItem) and parchanged == item.widget().text():
+                vis = bool(item.widget().checkState())
+                print("{0} made {1}".format(parchanged, 'visible' if vis else 'not visible'))
+                for xx in range(self.compGrids[ii].rowCount()):
+                    for yy in range(self.compGrids[ii].columnCount()):
+                        it = self.compGrids[ii].itemAtPosition(xx, yy)
+                        it.widget().setVisible(vis)
+                if vis:
+                    #self.grid.addItem(self.compGrids[ii], ii, 1, self.compGrids[ii].rowCount(), self.compGrids[ii].columnCount())
+                    self.grid.addItem(self.compGrids[ii], ii, 1, 1, self.maxcols)
+                else:
+                    self.grid.removeItem(self.grid.itemAtPosition(ii, 1))
+
     def changedFitCheckBox(self):
         """
         This is the signal handler when a checkbox is changed. The changed checkbox
@@ -358,14 +377,20 @@ class PlkFitboxesWidget(QtGui.QWidget):
 
         # Whatevs, we can just as well re-scan all the CheckButtons, and re-do
         # the fit
-        for xx in range(self.grid.rowCount()):
-            for yy in range(self.grid.columnCount()):
-                item = self.grid.itemAtPosition(xx, yy)
-                if isinstance(item, QtGui.QWidgetItem) and \
-                        isinstance(item.widget(), QtGui.QCheckBox) and \
-                        parchanged == item.widget().text():
-                    self.boxChecked(parchanged, bool(item.widget().checkState()))
-                    print("{0} set to {1}".format(parchanged, bool(item.widget().checkState())))
+        for ii in range(self.grid.rowCount()):
+            lab = self.grid.itemAtPosition(ii, 0)
+            if lab is None:
+                continue
+            item = self.grid.itemAtPosition(ii, 1)
+            if isinstance(item, QtGui.QLayoutItem):
+                for xx in range(item.rowCount()):
+                    for yy in range(item.columnCount()):
+                        it = item.itemAtPosition(xx, yy)
+                        if isinstance(it, QtGui.QWidgetItem) and \
+                                isinstance(it.widget(), QtGui.QCheckBox) and \
+                                parchanged == it.widget().text():
+                            self.boxChecked(parchanged, bool(it.widget().checkState()))
+                            print("{0} set to {1}".format(parchanged, bool(it.widget().checkState())))
 
 class PlkXYPlotWidget(QtGui.QWidget):
     """

@@ -431,7 +431,7 @@ class QtipWindow(QtGui.QMainWindow):
             cell = "psr = pu.Pulsar('"+parfilename+"', '"+timfilename+"')"
         else:
             cell = "psr = pu.Pulsar(testpulsar=True)"
-        self.kernel.shell.run_cell(cell)
+        result = self.kernel.shell.run_cell(cell)
         psr = self.kernel.shell.ns_table['user_local']['psr']
 
         # Update the plk widget
