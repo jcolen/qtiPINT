@@ -9,9 +9,9 @@ import tempfile
 from constants import J1744_parfile, J1744_timfile, J1744_parfile_basic 
 
 # For date conversions
-import jdcal        # pip install jdcal
 import astropy.units as u
-    
+from astropy.time import Time
+
 import pint.models as pm
 from pint.phase import Phase
 from pint import toa
@@ -31,25 +31,6 @@ plot_labels = ['pre-fit', 'post-fit', 'mjd', 'year', 'orbital phase', 'serial', 
 # Some parameters we do not want to add a fitting checkbox for:
 nofitboxpars = ['PSR', 'START', 'FINISH', 'POSEPOCH', 'PEPOCH', 'DMEPOCH', \
     'EPHVER', 'TZRMJD', 'TZRFRQ', 'TRES']
-
-def mjd2gcal(mjds):
-    '''
-    Calculate Gregorian dates from a numpy array of MJDS
-    
-    @param mjds:    Numpy array of mjds
-    '''
-    nmjds = len(mjds)
-    gyear = np.zeros(nmjds)
-    gmonth = np.zeros(nmjds)
-    gday = np.zeros(nmjds)
-    gfd = np.zeros(nmjds)
-
-    # TODO: get rid of ugly for loop. Use some zip or whatever
-    for ii in range(nmjds):
-        gyear[ii], gmonth[ii], gday[ii], gfd[ii] = \
-                jdcal.jd2gcal(jdcal.MJD_0, mjds[ii].value)
-    
-    return gyear, gmonth, gday, gfd
 
 class Pulsar(object):
     '''
@@ -267,20 +248,14 @@ class Pulsar(object):
         '''
         Return the day of the year for all the TOAs of this pulsar
         '''
-        gyear, gmonth, gday, fd = mjd2gcal(self.stoas)
-        mjdy = np.array([jdcal.gcal2jd(gyear[ii], 1, 0)[1] for ii in range(len(gyear))]) * u.d
-        return self.stoas - mjdy
+        t = Time(self.stoas, format='mjd')
+        year = Time(np.floor(t.decimalyear), format='decimalyear')
+        return (t.mjd - year.mjd) * u.day
 
     @property
     def year(self):
-        gyear, gmonth, gday, gfd = mjd2gcal(self.stoas)
-
-        # MJD of start of the year (31st Dec)
-        mjdy = np.array([jdcal.gcal2jd(gyear[ii], 1, 0)[1] for ii in range(len(gfd))]) * u.d
-        # MJD of end of the year
-        mjdy1 = np.array([jdcal.gcal2jd(gyear[ii]+1, 1, 0)[1] for ii in range(len(gfd))]) * u.d
-
-        return gyear + (self.stoas - mjdy) / (mjdy1 - mjdy)
+        t = Time(self.stoas, format='mjd')
+        return (t.decimalyear) * u.year
         
     @property
     def siderealt(self):

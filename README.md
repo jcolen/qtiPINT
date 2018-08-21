@@ -26,7 +26,6 @@ Requirements:
  * IPython >= 2.0
  * pygments
  * pyzmq
- * jdcal
  * pyephem
  * h5py
 

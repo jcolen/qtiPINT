@@ -153,9 +153,6 @@ import numpy as np
 import time
 import copy
 
-# For date conversions
-import jdcal        # pip install jdcal
-
 import constants
 import pulsar as pu
 
