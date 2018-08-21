@@ -5,8 +5,8 @@
 
 Direct contributions to the code base:
 
-* [_your name here_](mailto:vhaasteren@gmail.com)
+* *your name here*
 
 Comments, corrections & suggestions:
 
-* [_Michele Vallisneri_](mailto:vallis@vallis.org)
+* [_Jonathan Colen_](mailto:jcolen19@gmail.com) or post an Issue
