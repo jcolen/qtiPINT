@@ -318,7 +318,8 @@ class PlkFitboxesWidget(QtGui.QWidget):
             ccb.setFont(font)
             ccb.setChecked(False)
             self.grid.addWidget(ccb, ii, 0, 1, 1)
-            
+           
+            noneChecked = True
             self.compGrids.append(QtGui.QGridLayout())
 
             for pp, par in enumerate(showpars):
@@ -326,9 +327,9 @@ class PlkFitboxesWidget(QtGui.QWidget):
                 cb.stateChanged.connect(self.changedFitCheckBox)
                 #Set checked/unchecked
                 cb.setChecked(par in fitpars)
-                
+                if par in fitpars:
+                    noneChecked = False
                 self.compGrids[ii].addWidget(cb, int(pp/self.maxcols), pp%self.maxcols, 1, 1)
-                cb.setVisible(False)
             #Now pad the last row
             lastcol = len(showpars)%self.maxcols
             lastrow = int(len(showpars)/self.maxcols)
@@ -337,7 +338,9 @@ class PlkFitboxesWidget(QtGui.QWidget):
                 label = QtGui.QLabel(self)
                 label.setText('')
                 self.compGrids[ii].addWidget(label, lastrow, lastcol, 1, self.maxcols-lastcol)
-                label.setVisible(False)
+            self.grid.addItem(self.compGrids[ii], ii, 1, 1, self.maxcols)
+            if noneChecked:
+                self.changeGroupVisibility(False, ii)
             ii += 1
 
     def deleteFitCheckBoxes(self):
@@ -351,7 +354,17 @@ class PlkFitboxesWidget(QtGui.QWidget):
                     item.widget().deleteLater()
                 else:
                     self.grid.removeItem(item)
-    
+   
+    def changeGroupVisibility(self, vis, index):
+        for xx in range(self.compGrids[index].rowCount()):
+            for yy in range(self.compGrids[index].columnCount()):
+                it = self.compGrids[index].itemAtPosition(xx, yy)
+                it.widget().setVisible(vis)
+        if vis:
+            self.grid.addItem(self.compGrids[index], index, 1, 1, self.maxcols)
+        else:
+            self.grid.removeItem(self.grid.itemAtPosition(index, 1))
+
     def changedGroupCheckBox(self):
         '''
         Show or hide a group of fit check boxes corresponding to a component
@@ -363,16 +376,8 @@ class PlkFitboxesWidget(QtGui.QWidget):
             item = self.grid.itemAtPosition(ii, 0)
             if isinstance(item, QtGui.QWidgetItem) and compchanged == item.widget().text():
                 vis = bool(item.widget().checkState())
-                print("{0} made {1}".format(compchanged, 'visible' if vis else 'not visible'))
-                for xx in range(self.compGrids[ii].rowCount()):
-                    for yy in range(self.compGrids[ii].columnCount()):
-                        it = self.compGrids[ii].itemAtPosition(xx, yy)
-                        it.widget().setVisible(vis)
-                if vis:
-                    #self.grid.addItem(self.compGrids[ii], ii, 1, self.compGrids[ii].rowCount(), self.compGrids[ii].columnCount())
-                    self.grid.addItem(self.compGrids[ii], ii, 1, 1, self.maxcols)
-                else:
-                    self.grid.removeItem(self.grid.itemAtPosition(ii, 1))
+                print("{0} made {1}".format(compchanged, 'visible' if vis else 'hidden'))
+                self.changeGroupVisibility(vis, ii)
 
     def changedFitCheckBox(self):
         """
