@@ -217,27 +217,37 @@ class PlkActionsWidget(QtGui.QWidget):
 
         self.setLayout(self.hbox)
 
-    def setCallbacks(self, updatePlot, reFit):
+    def setCallbacks(self, updatePlot, reFit, writePar, writeTim, saveFig):
         """
         Callback functions
         """
         self.updatePlot = updatePlot
         self.reFit_callback = reFit
+        self.writePar_callback = writePar
+        self.writeTim_callback = writeTim
+        self.saveFig_callback = saveFig
+        
 
     def reFit(self):
         if self.reFit_callback is not None:
             self.reFit_callback()
 
     def writePar(self):
+        if self.writePar_callback is not None:
+            self.writePar_callback()
         print("Write Par clicked")
 
     def writeTim(self):
+        if self.writeTim_callback is not None:
+            self.writeTim_callback()
         print("Write Tim clicked")
 
     def clearAll(self):
         print("Clear clicked")
 
     def saveFig(self):
+        if self.saveFig_callback is not None:
+            self.saveFig_callback()
         print("Save fig clicked")
 
 
@@ -568,7 +578,6 @@ class PlkWidget(QtGui.QWidget):
         self.fitboxVisible = True
         self.actionsVisible = True
         self.layoutMode = 1         # (0 = none, 1 = all, 2 = only fitboxes, 3 = fit & action)
-        #self.layoutMode = 4         # (0 = none, 1 = all, 2 = only xy select, 3 = only fit, 4 = xy select & fit)
 
     def setColorScheme(self, start=True):
         """
@@ -626,7 +635,7 @@ class PlkWidget(QtGui.QWidget):
         self.fitboxesWidget.setCallbacks(self.fitboxChecked, psr.compsSetParamsDict,
                 psr.fitparams, pu.nofitboxpars)
         self.xyChoiceWidget.setCallbacks(self.updatePlot)
-        self.actionsWidget.setCallbacks(self.updatePlot, self.reFit)
+        self.actionsWidget.setCallbacks(self.updatePlot, self.reFit, self.writePar, self.writeTim, self.saveFig)
 
         # Draw the residuals
         self.xyChoiceWidget.updateChoice()
@@ -649,6 +658,33 @@ class PlkWidget(QtGui.QWidget):
         if not self.psr is None:
             self.psr.fit()
             self.updatePlot()
+
+    def writePar(self):
+        '''
+        Write the fit parfile to a file
+        '''
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Choose output par file', '~/')
+        fout = open(filename, 'w')
+        fout.write(self.psr._fitter.model.as_parfile())
+        fout.close()
+        print('Saved post-fit parfile to %s' % filename)
+
+    def writeTim(self):
+        '''
+        Write the current timfile to a file
+        '''
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Choose output tim file', '~/')
+        print('Chose output file %s' % filename)
+
+    def saveFig(self):
+        '''
+        Save the current plot view to a file
+        '''
+        self.setColorScheme(True)
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Choose output file', '~/')
+        self.plkFig.savefig(filename)
+        print('Saved image to %s' % filename)
+        self.setColorScheme(False)
 
     def newFitParameters(self):
         """
