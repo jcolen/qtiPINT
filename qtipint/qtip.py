@@ -30,6 +30,7 @@ import qtipint.constants as constants
 
 from qtipint.opensomething import OpenSomethingWidget
 from qtipint.plk import PlkWidget
+from qtipint.paredit import ParWidget
 
 from astropy import log
 log.setLevel('WARNING')
@@ -87,6 +88,7 @@ class QtipWindow(QtGui.QMainWindow):
         self.createPlkWidget()
         self.createIPythonWidget()
         self.createOpenSomethingWidget()
+        self.createParEditWidget()
 
         # Position the widgets
         self.initQtipLayout()
@@ -142,6 +144,11 @@ class QtipWindow(QtGui.QMainWindow):
         self.toggleIPythonAction.setShortcut('Ctrl+I')
         self.toggleIPythonAction.setStatusTip('Toggle IPython')
         self.toggleIPythonAction.triggered.connect(self.toggleIPython)
+        
+        self.toggleParEditAction = QtGui.QAction('&ParEdit', self)        
+        self.toggleParEditAction.setShortcut('Ctrl+E')
+        self.toggleParEditAction.setStatusTip('Toggle ParEdit')
+        self.toggleParEditAction.triggered.connect(self.toggleParEdit)
 
         self.aboutAction = QtGui.QAction('&About', self)        
         self.aboutAction.setShortcut('Ctrl+A')
@@ -178,6 +185,7 @@ class QtipWindow(QtGui.QMainWindow):
         self.fileMenu.addAction(self.exitAction)
         self.viewMenu = self.menubar.addMenu('&View')
         self.viewMenu.addAction(self.togglePlkAction)
+        self.viewMenu.addAction(self.toggleParEditAction)
         self.viewMenu.addAction(self.toggleIPythonAction)
         self.helpMenu = self.menubar.addMenu('&Help')
         self.helpMenu.addAction(self.aboutAction)
@@ -260,6 +268,13 @@ class QtipWindow(QtGui.QMainWindow):
         self.plkWidget = PlkWidget(parent=self.mainFrame)
         self.plkWidget.hide()
 
+    def createParEditWidget(self):
+        '''
+        Create the ParEdit widget
+        '''
+        self.parEditWidget = ParWidget(parent=self.mainFrame)
+        self.parEditWidget.hide()
+
     def toggleIPython(self):
         """
         Toggle the IPython widget on or off
@@ -272,6 +287,11 @@ class QtipWindow(QtGui.QMainWindow):
         """
         self.setQtipLayout(whichWidget='plk')
 
+    def toggleParEdit(self):
+        '''
+        Toggle the par edit widget on or off
+        '''
+        self.setQtipLayout(whichWidget='paredit')
 
     def initQtipLayout(self):
         """
@@ -279,6 +299,7 @@ class QtipWindow(QtGui.QMainWindow):
         """
         self.hbox.addWidget(self.openSomethingWidget)
         self.hbox.addWidget(self.plkWidget)
+        self.hbox.addWidget(self.parEditWidget)
         self.hbox.addWidget(self.consoleWidget)
         self.mainFrame.setLayout(self.hbox)
 
@@ -304,6 +325,7 @@ class QtipWindow(QtGui.QMainWindow):
         """
         self.openSomethingWidget.hide()
         self.plkWidget.hide()
+        self.parEditWidget.hide()
         self.consoleWidget.hide()
 
     def showVisibleWidgets(self):
@@ -315,6 +337,8 @@ class QtipWindow(QtGui.QMainWindow):
             self.openSomethingWidget.show()
         elif self.whichWidget.lower() == 'plk':
             self.plkWidget.show()
+        elif self.whichWidget.lower() == 'paredit':
+            self.parEditWidget.show()
         if self.showIPython:
             self.consoleWidget.show()
         else:
@@ -322,6 +346,8 @@ class QtipWindow(QtGui.QMainWindow):
 
         if self.whichWidget.lower() == 'plk' and not self.showIPython:
             self.plkWidget.setFocusToCanvas()
+        if self.whichWidget.lower() == 'paredit' and not self.showIPython:
+            self.parEditWidget.setFocus()
         #elif self.showIPython:
         #    self.consoleWidget.setFocus()
 
@@ -436,6 +462,9 @@ class QtipWindow(QtGui.QMainWindow):
 
         # Update the plk widget
         self.plkWidget.setPulsar(psr)
+
+        # Update the par edit widget
+        self.parEditWidget.setPulsar(psr)
 
         # Communicating with the kernel goes as follows
         # self.kernel.shell.push({'foo': 43, 'print_process_id': print_process_id}, interactive=True)

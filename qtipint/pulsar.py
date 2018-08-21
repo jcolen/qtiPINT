@@ -316,8 +316,8 @@ class Pulsar(object):
             unc = getattr(self._fitter.model, key).uncertainty.to(units)
             diff = (post - pre).to(units)
             print('%8s %8s\t%16.10g\t%16.10g\t%16.8g\t%16.8g' % (key, units,
-                                                             post.value, 
-                                                             pre.value,
+                                                             pre.value, 
+                                                             post.value,
                                                              unc.value,
                                                              diff.value))
 

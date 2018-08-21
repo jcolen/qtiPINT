@@ -357,13 +357,13 @@ class PlkFitboxesWidget(QtGui.QWidget):
         Show or hide a group of fit check boxes corresponding to a component
         '''
         sender = self.sender()
-        parchanged = sender.text()
+        compchanged = sender.text()
 
         for ii in range(self.grid.rowCount()):
             item = self.grid.itemAtPosition(ii, 0)
-            if isinstance(item, QtGui.QWidgetItem) and parchanged == item.widget().text():
+            if isinstance(item, QtGui.QWidgetItem) and compchanged == item.widget().text():
                 vis = bool(item.widget().checkState())
-                print("{0} made {1}".format(parchanged, 'visible' if vis else 'not visible'))
+                print("{0} made {1}".format(compchanged, 'visible' if vis else 'not visible'))
                 for xx in range(self.compGrids[ii].rowCount()):
                     for yy in range(self.compGrids[ii].columnCount()):
                         it = self.compGrids[ii].itemAtPosition(xx, yy)
