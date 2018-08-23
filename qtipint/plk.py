@@ -139,7 +139,6 @@ from __future__ import division
 import os, sys
 
 # Importing all the stuff for the IPython console widget
-#from PyQt4 import QtGui, QtCore
 from qtconsole.qt import QtCore, QtGui
 
 # Importing all the stuff for the matplotlib widget
@@ -184,6 +183,10 @@ class PlkActionsWidget(QtGui.QWidget):
         self.parent = parent
         self.updatePlot = None
         self.reFit_callback = None
+        self.clearAll_callback=None
+        self.writePar_callback=None
+        self.writeTim_callback=None
+        self.saveFig_callback=None
 
         self.hbox = QtGui.QHBoxLayout()     # One horizontal layout
 

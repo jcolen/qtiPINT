@@ -13,7 +13,7 @@ from __future__ import division
 import os, sys
 
 # Importing all the stuff for the IPython console widget
-from PyQt4 import QtGui, QtCore
+from qtconsole.qt import QtGui, QtCore
 
 # Importing all the stuff for the matplotlib widget
 import matplotlib
@@ -57,6 +57,7 @@ class OpenSomethingWidget(QtGui.QWidget):
         open the file
         """
         if not self.openFileFn is None:
-            filename = QtGui.QFileDialog.getOpenFileName(self, 'Open file', '~/')
+            parfilename = QtGui.QFileDialog.getOpenFileName(self, 'Open par-file', '~/')
+            timfilename = QtGui.QFileDIalog.getOpenFileName(self, 'Open tim-file', '~/')
             self.openFileFn(filename)
 
