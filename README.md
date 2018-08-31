@@ -14,6 +14,8 @@ At the moment, not all the extended functions of Plk are implemented. If there i
 
 This project was previously under development at [vhaasteren/qtip](https://github.com/vhaasteren/qtip/) and was intended to interface with Tempo2, libstempo and Piccard too. Here, only PINT is supported.
 
+**Update:** A Tkinter clone of this interface has developed and merged with [PINT](https://github.com/NANOGrav/PINT/). Development on this project will stop for now, but the repository is being left open in case Tkinter is insufficient and a more detailed interface is needed down the road.
+
 Requirements:
 =============
 
